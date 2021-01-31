@@ -2,19 +2,31 @@ package calculator_test
 
 import (
 	"calculator"
+	"math"
 	"math/rand"
 	"testing"
 )
 
-type testCase = struct {
+type testCase struct {
 	name       string
 	a, b, want float64
 }
 
-type testCaseWithError = struct {
+type testCaseWithError struct {
 	name        string
 	a, b, want  float64
 	errExpected bool
+}
+
+type testCaseSqrt struct {
+	name        string
+	a, want     float64
+	errExpected bool
+}
+
+// floating point numbers have limited precision, so instead compare that both numbers are equal within a certain tolerance level
+func closeEnough(a, b, tolerance float64) bool {
+	return math.Abs(a-b) <= tolerance
 }
 
 func TestAdd(t *testing.T) {
@@ -110,6 +122,28 @@ func TestDivide(t *testing.T) {
 			t.Fatalf("%s. Divide(%f, %f): Unexpected error status: %v", tc.name, tc.a, tc.b, errReceived)
 		} else if !tc.errExpected && tc.want != got {
 			t.Errorf("%s. Divide(%f, %f): want %f, got %f", tc.name, tc.a, tc.b, tc.want, got)
+		}
+	}
+}
+
+func TestSqrt(t *testing.T) {
+	t.Parallel()
+
+	testCases := []testCaseWithError{
+		{name: "A successful square root of a positive whole number", a: 4, want: 2, errExpected: false},
+		{name: "A negative number resulting in an error", a: -9, want: 999, errExpected: true},
+		{name: "A successful square root of a positive fractional number", a: 10.5, want: 3.2403703492, errExpected: false},
+		{name: "A successful square root of zero, returning zero", a: 0, want: 0, errExpected: false},
+	}
+
+	for _, tc := range testCases {
+		got, err := calculator.Sqrt(tc.a)
+		errReceived := err != nil
+		if tc.errExpected != errReceived {
+			// We do not need to check the data value because we are expetcing the test to fail when an error is not returned
+			t.Fatalf("%s. Sqrt(%f): Unexpected error status: %v. Error: %v", tc.name, tc.a, errReceived, err)
+		} else if !tc.errExpected && !closeEnough(tc.want, got, 0.0000001) {
+			t.Errorf("%s. Sqrt(%f): want %f, got %f", tc.name, tc.a, tc.want, got)
 		}
 	}
 }
