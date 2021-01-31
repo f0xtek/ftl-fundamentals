@@ -1,13 +1,27 @@
 // Package calculator provides a library for simple calculations in Go.
 package calculator
 
+import "errors"
+
 // Add takes two numbers and returns the result of adding them together.
 func Add(a, b float64) float64 {
-return a + b
+	return a + b
 }
 
-// Subtract takes two numbers and returns the result of subtracting the second
-// from the first.
+// Subtract takes two numbers and returns the result of subtracting the second from the first.
 func Subtract(a, b float64) float64 {
-	return b - a
+	return a - b
+}
+
+// Multiply takes two numbers and returns the product
+func Multiply(a, b float64) float64 {
+	return a * b
+}
+
+// Divide takes two numbers and returns the result of dividing the first number by the second. If either number input is zero, an error is returned.
+func Divide(a, b float64) (float64, error) {
+	if a == 0 || b == 0 {
+		return 0, errors.New("invalid input, cannot divide by zero")
+	}
+	return a / b, nil
 }
